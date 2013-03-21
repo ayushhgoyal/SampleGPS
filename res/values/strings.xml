@@ -1,0 +1,8 @@
+<resources>
+
+	<string name="app_name">SampleGPSAPP</string>
+	<string name="hello_world">Hello world!</string>
+	<string name="menu_settings">Settings</string>
+	<string name="title_activity_samplg_gps">SamplgGPS</string>
+
+</resources>
