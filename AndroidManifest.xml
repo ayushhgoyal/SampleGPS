@@ -26,6 +26,15 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
+		<receiver android:name="GPSstatusReceiver" >
+			<intent-filter>
+				<action android:name="android.location.PROVIDERS_CHANGED" />
+			</intent-filter>
+		</receiver>
+
+		<service android:name="GPSservice" >
+		</service>
 	</application>
 
 </manifest>
