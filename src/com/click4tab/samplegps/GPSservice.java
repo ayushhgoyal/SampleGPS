@@ -16,121 +16,117 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class GPSservice extends Service {
-	public static int i;
-	Location location;
+	private static final String TAG = "BOOMBOOMTESTGPS";
+	private LocationManager mLocationManager = null;
+	private static final int LOCATION_INTERVAL = 1000;
+	private static final float LOCATION_DISTANCE = 10f;
+	Context context;
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		// TODO Auto-generated method stub
+	private class LocationListener implements android.location.LocationListener {
+		Location mLastLocation;
 
-		Log.e("Service", "Service started");
-		SamplGPS.generateNotification(this, "service start");
-		i = 1;
-		myCron();
-		return Service.START_STICKY;
-	}
+		public LocationListener(String provider) {
+			Log.e(TAG, "LocationListener " + provider);
+			mLastLocation = new Location(provider);
+		}
 
-	public void myCron() {
+		@Override
+		public void onLocationChanged(Location location) {
+			Log.e(TAG, "onLocationChanged: " + location);
+			mLastLocation.set(location);
 
-		LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		// locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-		// 5000, 1, new LocationListener() {
-		//
-		// @Override
-		// public void onStatusChanged(String provider, int status,
-		// Bundle extras) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		//
-		// @Override
-		// public void onProviderEnabled(String provider) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		//
-		// @Override
-		// public void onProviderDisabled(String provider) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		//
-		// @Override
-		// public void onLocationChanged(Location location) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		// });
-		// Define the criteria how to select the locatioin provider -> use
-		// default
-		// Criteria criteria = new Criteria();
-		// criteria.setAccuracy(Criteria.ACCURACY_FINE);
-		// provider = locationManager.getBestProvider(criteria, true);
-
-		location = new Location(LocationManager.GPS_PROVIDER);
-		final Handler handler = new Handler();
-		final Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {
-				if (i == 1) {
-					// SamplGPS.generateNotification(getBaseContext(),
-					// " service");
-					performRepetitiveTask();
-					handler.postDelayed(this, 10000);
-				}
-				// TODO Auto-generated method stub
-
+			double lat = (double) (mLastLocation.getLatitude());
+			double lng = (double) (mLastLocation.getLongitude());
+			Time now = new Time();
+			now.setToNow();
+			if (!(lat == 0.0 && lng == 0.0)) {
+				String notif = "Lat " + SamplGPS.round(lat) + " Long "
+						+ SamplGPS.round(lng) + " at " + now.hour + ":"
+						+ now.minute + ":" + now.second;
+				// pupdateView(notif);
+				SamplGPS.generateNotification(context, notif);
 			}
-		};
-		handler.postDelayed(runnable, 10000);
-		// ms
+			// SamplGPS.generateNotification(context, notif);
+
+		}
+
+		@Override
+		public void onProviderDisabled(String provider) {
+			Log.e(TAG, "onProviderDisabled: " + provider);
+		}
+
+		@Override
+		public void onProviderEnabled(String provider) {
+			Log.e(TAG, "onProviderEnabled: " + provider);
+		}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+			Log.e(TAG, "onStatusChanged: " + provider);
+		}
 	}
 
-	private void performRepetitiveTask() {
-		// TODO Auto-generated method stub
-		Time now = new Time();
-		now.setToNow();
-		Log.e("scheduled task", "called " + now.hour + ":" + now.minute + ":"
-				+ now.second);
-		// SamplGPS.generateNotification(getBaseContext(), "yo");
-		double lat = (double) (location.getLatitude());
-		double lng = (double) (location.getLongitude());
-		// Time now = new Time();
-		// now.setToNow();
-		// if (!(lat == 0.0 && lng == 0.0)) {
-
-		// updateView("Lat " + SamplGPS.round(lat) + " Long "
-		// + SamplGPS.round(lng) + " at " + now.hour + ":"
-		// + now.minute + ":" + now.second);
-
-		// Toast.makeText(
-		// getBaseContext(),
-		// "Lat " + SamplGPS.round(lat) + " Long "
-		// + SamplGPS.round(lng) + " at " + now.hour + ":"
-		// + now.minute + ":" + now.second, Toast.LENGTH_SHORT)
-		// .show();
-		SamplGPS.generateNotification(this, "Lat " + SamplGPS.round(lat)
-				+ " Long " + SamplGPS.round(lng) + " at " + now.hour + ":"
-				+ now.minute + ":" + now.second);
-
-	}
-
-	// }
-
-	@Override
-	public void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		i = 0;
-		Log.v("Service", "Service stopped");
-
-	}
+	LocationListener[] mLocationListeners = new LocationListener[] {
+			new LocationListener(LocationManager.GPS_PROVIDER),
+			new LocationListener(LocationManager.NETWORK_PROVIDER) };
 
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.e(TAG, "onStartCommand");
+		super.onStartCommand(intent, flags, startId);
+		context = this;
+		return START_STICKY;
+	}
+
+	@Override
+	public void onCreate() {
+		Log.e(TAG, "onCreate");
+		initializeLocationManager();
+		// try {
+		// mLocationManager.requestLocationUpdates(
+		// LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL,
+		// LOCATION_DISTANCE, mLocationListeners[1]);
+		// } catch (java.lang.SecurityException ex) {
+		// Log.i(TAG, "fail to request location update, ignore", ex);
+		// } catch (IllegalArgumentException ex) {
+		// Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+		// }
+		try {
+			mLocationManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, LOCATION_INTERVAL,
+					LOCATION_DISTANCE, mLocationListeners[0]);
+		} catch (java.lang.SecurityException ex) {
+			Log.i(TAG, "fail to request location update, ignore", ex);
+		} catch (IllegalArgumentException ex) {
+			Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		Log.e(TAG, "onDestroy");
+		super.onDestroy();
+		// if (mLocationManager != null) {
+		// for (int i = 0; i < mLocationListeners.length; i++) {
+		// try {
+		// mLocationManager.removeUpdates(mLocationListeners[i]);
+		// } catch (Exception ex) {
+		// Log.i(TAG, "fail to remove location listners, ignore", ex);
+		// }
+		// }
+		// }
+	}
+
+	private void initializeLocationManager() {
+		Log.e(TAG, "initializeLocationManager");
+		if (mLocationManager == null) {
+			mLocationManager = (LocationManager) getApplicationContext()
+					.getSystemService(Context.LOCATION_SERVICE);
+		}
+	}
 }

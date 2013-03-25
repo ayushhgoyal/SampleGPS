@@ -54,6 +54,8 @@ public class SamplGPS extends Activity implements LocationListener {
 		}
 
 		logString = new StringBuilder();
+
+		// activate start stop services
 		buttonCLickListeners();
 		Log.e("check", "starting notification");
 		generateNotification(context, "app start");
@@ -63,7 +65,7 @@ public class SamplGPS extends Activity implements LocationListener {
 			buildAlertMessageNoGps();
 		} else {
 
-			getUpdatesFromGPS();
+			// getUpdatesFromGPS();
 		}
 
 	}
