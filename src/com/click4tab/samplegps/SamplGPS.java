@@ -7,15 +7,17 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Criteria;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
@@ -34,6 +36,7 @@ public class SamplGPS extends Activity implements LocationListener {
 	Button startButton, stopButton;
 	Context context;
 	public static String s;
+	AlarmManagerBroadcastReceiver alarm;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -46,7 +49,9 @@ public class SamplGPS extends Activity implements LocationListener {
 		logsView = (TextView) findViewById(R.id.textView1);
 
 		try {
-			logsView.setText(s);
+			SharedPreferences pref = context.getSharedPreferences("notif",
+					MODE_WORLD_WRITEABLE);
+			logsView.setText(pref.getString("notif", ""));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -60,14 +65,61 @@ public class SamplGPS extends Activity implements LocationListener {
 		Log.e("check", "starting notification");
 		generateNotification(context, "app start");
 
+		SharedPreferences pref = context.getSharedPreferences("notif",
+				MODE_WORLD_WRITEABLE);
+
+		updateView(pref.getString("notif", ""));
 		final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-			buildAlertMessageNoGps();
+			try {
+				// final Intent poke = new Intent();
+				// poke.setClassName("com.android.settings",
+				// "com.android.settings.widget.SettingsAppWidgetProvider");
+				// poke.addCategory(Intent.CATEGORY_ALTERNATIVE);
+				// poke.setData(Uri.parse("3"));
+				// sendBroadcast(poke);
+				Settings.Secure.putString(getContentResolver(),
+						Settings.Secure.LOCATION_PROVIDERS_ALLOWED,
+						"network,gps");
+				Log.e("check1",
+						"gps: "
+								+ manager
+										.isProviderEnabled(LocationManager.GPS_PROVIDER));
+				Log.e("Activity", "Starting service");
+				Intent intent = new Intent(context, GPSservice.class);
+				context.startService(intent);
+			} catch (Exception e) {
+				Log.e("exec", e.toString());
+				Log.e("check2",
+						"gps: "
+								+ manager
+										.isProviderEnabled(LocationManager.GPS_PROVIDER));
+			}
+			// buildAlertMessageNoGps();
 		} else {
-
+			Log.e("check3",
+					"gps: "
+							+ manager
+									.isProviderEnabled(LocationManager.GPS_PROVIDER));
 			// getUpdatesFromGPS();
 		}
+		Log.e("Activity", "Starting service");
+		alarm = new AlarmManagerBroadcastReceiver();
+		cancelRepeatingTimer(null);
+		startRepeatingTimer(null);
+		// Intent intent = new Intent(context, GPSservice.class);
+		// context.startService(intent);
 
+	}
+
+	public void cancelRepeatingTimer(View view) {
+		Context context = this.getApplicationContext();
+		if (alarm != null) {
+			alarm.CancelAlarm(context);
+		}
+		// else {
+		// Toast.makeText(context, "Alarm is null", Toast.LENGTH_SHORT).show();
+		// }
 	}
 
 	private void buttonCLickListeners() {
@@ -77,9 +129,14 @@ public class SamplGPS extends Activity implements LocationListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Log.e("Activity", "Starting service");
-				Intent intent = new Intent(context, GPSservice.class);
-				context.startService(intent);
+				// Log.e("Activity", "Starting service");
+				// Intent intent = new Intent(context, GPSservice.class);
+				// context.startService(intent);
+				SharedPreferences pref = context.getSharedPreferences("notif",
+						MODE_WORLD_WRITEABLE);
+				logsView.setText(pref.getString("notif", ""));
+				scroll.fullScroll(View.FOCUS_DOWN);
+
 			}
 		});
 		stopButton.setOnClickListener(new OnClickListener() {
@@ -87,12 +144,26 @@ public class SamplGPS extends Activity implements LocationListener {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Log.e("Activity", "Stopping service");
-				Intent intent = new Intent(context, GPSservice.class);
-
-				stopService(intent);
+				// Log.e("Activity", "Stopping service");
+				// Intent intent = new Intent(context, GPSservice.class);
+				//
+				// stopService(intent);
+				SharedPreferences pref = context.getSharedPreferences("notif",
+						MODE_WORLD_WRITEABLE);
+				pref.edit().putString("notif", "").commit();
 			}
 		});
+	}
+
+	public void startRepeatingTimer(View view) {
+		Context context = this.getApplicationContext();
+		if (alarm != null) {
+			alarm.SetAlarm(context);
+		} else {
+			// Toast.makeText(context, "Alarm is null",
+			// Toast.LENGTH_SHORT).show();
+			Log.d("repeating alarm", "alarm null");
+		}
 	}
 
 	private void getUpdatesFromGPS() {
@@ -249,7 +320,7 @@ public class SamplGPS extends Activity implements LocationListener {
 		NotificationManager notificationManager = (NotificationManager) context
 				.getSystemService(Context.NOTIFICATION_SERVICE);
 		Notification notification = new Notification(icon, message, when);
-
+		Log.v("lat long ", message);
 		String title = context.getString(R.string.app_name);
 
 		Intent notificationIntent = new Intent(context, SamplGPS.class);

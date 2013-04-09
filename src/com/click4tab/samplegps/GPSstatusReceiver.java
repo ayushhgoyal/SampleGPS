@@ -12,6 +12,7 @@ import android.location.GpsStatus.Listener;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -35,10 +36,23 @@ public class GPSstatusReceiver extends BroadcastReceiver {
 				switch (event) {
 				case GpsStatus.GPS_EVENT_STARTED:
 					Log.e("GPS", "STARTED");
+					Log.e("status",
+							"gps: "
+									+ manager
+											.isProviderEnabled(LocationManager.GPS_PROVIDER));
 					SamplGPS.generateNotification(arg0, "gps started");
 					break;
 				case GpsStatus.GPS_EVENT_STOPPED:
 					Log.e("GPS", "STOPPED");
+					Log.e("try", "again starting gps");
+					Settings.Secure.putString(arg0.getContentResolver(),
+							Settings.Secure.LOCATION_PROVIDERS_ALLOWED,
+							"network,gps");
+
+					Log.e("chec4",
+							"gps: "
+									+ manager
+											.isProviderEnabled(LocationManager.GPS_PROVIDER));
 					SamplGPS.generateNotification(arg0, "gps stopped");
 					break;
 

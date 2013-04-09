@@ -10,6 +10,9 @@
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
+	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+	<uses-permission android:name="android.permission.WAKE_LOCK" />
 
 	<application
 		android:icon="@drawable/ic_launcher"
@@ -31,6 +34,9 @@
 			<intent-filter>
 				<action android:name="android.location.PROVIDERS_CHANGED" />
 			</intent-filter>
+		</receiver>
+		<!-- Broadcast receiver -->
+		<receiver android:name=".AlarmManagerBroadcastReceiver" >
 		</receiver>
 
 		<service android:name="GPSservice" >
