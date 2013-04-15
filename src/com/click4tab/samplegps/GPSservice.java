@@ -7,8 +7,9 @@ import java.util.Locale;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
@@ -37,6 +38,7 @@ public class GPSservice extends Service {
 	private AlarmManagerBroadcastReceiver alarm;
 	private static final long POINT_RADIUS = 100; // in Meters
 	private static final long PROX_ALERT_EXPIRATION = -1;
+	boolean firstTime = false;
 
 	private class nwLocationListener implements
 			android.location.LocationListener {
@@ -172,11 +174,16 @@ public class GPSservice extends Service {
 			// .isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
 			// this criteria part is new
-			Criteria criteria = new Criteria();
-			criteria.setAccuracy(Criteria.ACCURACY_FINE);
-			criteria.setCostAllowed(false);
-			String providerName = mLocationManager.getBestProvider(criteria,
-					true);
+			// Criteria criteria = new Criteria();
+			// criteria.setAccuracy(Criteria.ACCURACY_FINE);
+			// criteria.setCostAllowed(false);
+
+			SharedPreferences pref = context.getSharedPreferences(
+					"providerName", MODE_WORLD_WRITEABLE);
+			String providerName = pref
+					.getString("providerName", LocationManager.GPS_PROVIDER)
+					.toString().trim();
+			// String providerName = LocationManager.GPS_PROVIDER;
 
 			int i;
 			if (providerName.equals(LocationManager.GPS_PROVIDER)) {
@@ -279,8 +286,45 @@ public class GPSservice extends Service {
 		// registerReceiver(new ProximityIntentReceiver(), filter);
 		//
 		// // and proximity alert
-
+		Log.e("lat long", "lat " + lat + " long " + lng);
 		if (!(lat == 0.0 && lng == 0.0)) {
+			// if the locations is received from Network provider, save the
+			// location in a variable
+			// and check for every new location if the distance is greater than
+			// 500ma
+			// if it is more the 500m then again turn on GPS and request
+			// updates,
+			// if the distance is less that 500m then keep getting updates from
+			// network provider
+
+			SharedPreferences pref = context.getSharedPreferences(
+					Variables.TEMP_NETWORK_LOCATION, MODE_WORLD_WRITEABLE);
+			if (getProviderName().equals(LocationManager.NETWORK_PROVIDER)
+					&& firstTime) {
+				Editor edit = pref.edit();
+				edit.putString(Variables.TEMP_LAT, SamplGPS.round(lat) + "")
+						.commit();
+				edit.putString(Variables.TEMP_LONG, SamplGPS.round(lng) + "")
+						.commit();
+				firstTime = false;
+
+			}
+			double tempLat = Double.parseDouble(pref
+					.getString(Variables.TEMP_LAT, "0").toString().trim());
+			double tempLong = Double.parseDouble(pref
+					.getString(Variables.TEMP_LONG, "0").toString().trim());
+			float[] results3 = new float[3];
+
+			// Log.e("DIstance", "distance " + results[0] + "");
+			Location.distanceBetween(tempLat, tempLong, lat, lng, results3);
+			if ((int) (results3[0]) > 500) {
+				// if distance is mroe than 500, start gps
+				SharedPreferences pref4 = context.getSharedPreferences(
+						"providerName", MODE_WORLD_WRITEABLE);
+				Editor edit = pref4.edit();
+				edit.putString("providerName", LocationManager.GPS_PROVIDER)
+						.commit();
+			}
 
 			Geocoder geocoder;
 			List<Address> addresses;
@@ -316,9 +360,49 @@ public class GPSservice extends Service {
 			// updateMapView(context, lat, lng);
 			// SamplGPS.generateNotification(context, notif);
 
+		} else {
+			// means 0 coordinates are received
+			SharedPreferences pref = context.getSharedPreferences(
+					SamplGPS.GPS_COUNT, MODE_WORLD_WRITEABLE);
+			int i = pref.getInt(SamplGPS.GPS_COUNT, 0);
+
+			SharedPreferences pref2 = context.getSharedPreferences(
+					"providerName", MODE_WORLD_WRITEABLE);
+
+			Editor edit = pref.edit();
+			if (i < 10
+					&& pref2.getString("providerName",
+							LocationManager.GPS_PROVIDER).toString().trim()
+							.equals(LocationManager.GPS_PROVIDER)) {
+
+				i = i + 1;
+				edit.putInt(SamplGPS.GPS_COUNT, i).commit();
+				Log.e("count", "gps disable count " + i);
+			} else {
+				edit.putInt(SamplGPS.GPS_COUNT, 0).commit();
+
+				Editor edit2 = pref2.edit();
+				edit2.putString("providerName",
+						LocationManager.NETWORK_PROVIDER).commit();
+				Log.e("provider", "network provider will come into play now");
+				firstTime = true; // setting first time = 1, location will be
+									// saved for only single time
+
+			}
+
 		}
 
 		return START_NOT_STICKY;
+	}
+
+	private String getProviderName() {
+		// TODO Auto-generated method stub
+		SharedPreferences pref = context.getSharedPreferences("providerName",
+				MODE_WORLD_WRITEABLE);
+		String provider = pref
+				.getString("providerName", LocationManager.GPS_PROVIDER)
+				.toString().trim();
+		return provider;
 	}
 
 	private void updateMapView(Context context2, double lat, double lng) {

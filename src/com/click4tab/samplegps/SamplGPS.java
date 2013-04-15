@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -49,6 +50,7 @@ public class SamplGPS extends MapActivity implements LocationListener {
 	static TextView diff;
 	static TextView LocationProvider;
 	WebView webView;
+	static String GPS_COUNT = "count";
 
 	public static String DISTANCE_STRING = "5000";
 	private static int CHECKED_IN = 0;
@@ -168,6 +170,12 @@ public class SamplGPS extends MapActivity implements LocationListener {
 		// String notif = " dist " + results[0] + " Lat "
 
 		// end distance
+
+		SharedPreferences sharedPref = context.getSharedPreferences(GPS_COUNT,
+				MODE_WORLD_WRITEABLE);
+		Editor edit = sharedPref.edit();
+		edit.putInt(GPS_COUNT, 0).commit();
+
 	}
 
 	public void cancelRepeatingTimer(View view) {
