@@ -1,13 +1,12 @@
 package com.click4tab.samplegps;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,40 +21,71 @@ import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class SamplGPS extends Activity implements LocationListener {
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.maps.MapActivity;
+
+public class SamplGPS extends MapActivity implements LocationListener {
 	private LocationManager locationManager;
 	private String provider;
-	TextView logsView;
+	// TextView logsView;
 	StringBuilder logString;
 	Location l;
-	ScrollView scroll;
+	// ScrollView scroll;
 	Button startButton, stopButton;
 	Context context;
 	public static String s;
 	AlarmManagerBroadcastReceiver alarm;
+	public static final LatLng HAMBURG = new LatLng(53.551, 9.993);
+	static final LatLng KIEL = new LatLng(53.551, 9.993);
+	public static GoogleMap map;
+	static TextView dist;
+	static TextView time1, time2;
+	static TextView diff;
+	static TextView LocationProvider;
+	WebView webView;
+
+	public static String DISTANCE_STRING = "5000";
+	private static int CHECKED_IN = 0;
+	private static int CHECKED_OUT = 1;
+
+	static String sTime1 = "";
+	static String sTime2 = "";
+	public static String GPS_NETWORK_DISTANCE = "";
+	public static String LocationProviderString = "";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		context = this;
 		setContentView(R.layout.activity_sample_gps);
+		Log.e("check", "log working fine");
 		startButton = (Button) findViewById(R.id.button1);
 		stopButton = (Button) findViewById(R.id.button2);
-		scroll = (ScrollView) findViewById(R.id.scrollView1);
-		logsView = (TextView) findViewById(R.id.textView1);
+		dist = (TextView) findViewById(R.id.dist);
+		time1 = (TextView) findViewById(R.id.time1);
+		time2 = (TextView) findViewById(R.id.time2);
+		diff = (TextView) findViewById(R.id.diff);
+		LocationProvider = (TextView) findViewById(R.id.provider);
+		// webView = (WebView) findViewById(R.id.webView1);
+		// webView.getSettings().setJavaScriptEnabled(true);
+		// webView.loadUrl("http://maps.google.com/staticmap?center=26.901702,75.827835&zoom=14&size=512x512&maptype=mobile/&markers=26.901702,75.827835");
+		// scroll = (ScrollView) findViewById(R.id.scrollView1);
+		// logsView = (TextView) findViewById(R.id.textView1);
 
 		try {
 			SharedPreferences pref = context.getSharedPreferences("notif",
 					MODE_WORLD_WRITEABLE);
-			logsView.setText(pref.getString("notif", ""));
+			// logsView.setText(pref.getString("notif", ""));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			logsView.setText("he");
+			// logsView.setText("he");
 		}
 
 		logString = new StringBuilder();
@@ -110,6 +140,34 @@ public class SamplGPS extends Activity implements LocationListener {
 		// Intent intent = new Intent(context, GPSservice.class);
 		// context.startService(intent);
 
+		// map = ((MapFragment) getFragmentManager().findFragmentById(R.id.map))
+		// .getMap();
+		//
+		// Marker hamburg = map.addMarker(new MarkerOptions().position(HAMBURG)
+		// .title("Hamburg"));
+		//
+		// // .icon(BitmapDescriptorFactory
+		// // .fromResource(R.drawable.ic_launcher)));
+		//
+		// // Move the camera instantly to hamburg with a zoom of 15.
+		// map.moveCamera(CameraUpdateFactory.newLatLngZoom(HAMBURG, 20));
+		//
+		// // Zoom in, animating the camera.
+		// map.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
+		// map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
+		// calculate distance
+		double startLat = 26.914991;
+		double startLong = 75.743544;
+		double endLat = 26.901654;
+		double endLong = 75.825791;
+		float[] results = new float[3];
+		Location.distanceBetween(startLat, startLong, endLat, endLong, results);
+		Log.e("DIstance", "distance " + results[0] + "");
+		//
+		// String notif = " dist " + results[0] + " Lat "
+
+		// end distance
 	}
 
 	public void cancelRepeatingTimer(View view) {
@@ -134,8 +192,9 @@ public class SamplGPS extends Activity implements LocationListener {
 				// context.startService(intent);
 				SharedPreferences pref = context.getSharedPreferences("notif",
 						MODE_WORLD_WRITEABLE);
-				logsView.setText(pref.getString("notif", ""));
-				scroll.fullScroll(View.FOCUS_DOWN);
+				// logsView.setText(pref.getString("notif", ""));
+				// scroll.fullScroll(View.FOCUS_DOWN);
+				updateStatus();
 
 			}
 		});
@@ -148,6 +207,8 @@ public class SamplGPS extends Activity implements LocationListener {
 				// Intent intent = new Intent(context, GPSservice.class);
 				//
 				// stopService(intent);
+				cancelRepeatingTimer(null);
+
 				SharedPreferences pref = context.getSharedPreferences("notif",
 						MODE_WORLD_WRITEABLE);
 				pref.edit().putString("notif", "").commit();
@@ -258,8 +319,8 @@ public class SamplGPS extends Activity implements LocationListener {
 	private void updateView(String string) {
 		// TODO Auto-generated method stub
 		logString.append("\n " + string);
-		logsView.setText(logString);
-		scroll.fullScroll(View.FOCUS_DOWN);
+		// logsView.setText(logString);
+		// scroll.fullScroll(View.FOCUS_DOWN);
 		Log.e("in activity", string);
 		generateNotification(context, string);
 	}
@@ -314,7 +375,7 @@ public class SamplGPS extends Activity implements LocationListener {
 	}
 
 	public static void generateNotification(Context context, String message) {
-		// Log.e("this msg is received", message);
+		Log.e("this msg is received", message);
 		int icon = R.drawable.ic_launcher;
 		long when = System.currentTimeMillis();
 		NotificationManager notificationManager = (NotificationManager) context
@@ -341,6 +402,41 @@ public class SamplGPS extends Activity implements LocationListener {
 		// Vibrate if vibrate is enabled
 		// notification.defaults |= Notification.DEFAULT_VIBRATE;
 		notificationManager.notify(0, notification);
+
+	}
+
+	@Override
+	protected boolean isRouteDisplayed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public static void updateStatus() {
+		// TODO Auto-generated method stub
+
+		dist.setText(DISTANCE_STRING);
+
+		if (Double.parseDouble(DISTANCE_STRING) < Double.parseDouble("100")
+				&& CHECKED_IN == 0) {
+			Time now = new Time();
+			now.setToNow();
+			sTime1 = now.hour + ":" + now.minute + ":" + now.second;
+
+			CHECKED_IN = 1;
+		}
+
+		if (Double.parseDouble(DISTANCE_STRING) > Double.parseDouble("100")
+				&& CHECKED_IN == 1 && CHECKED_OUT == 1) {
+			Time now = new Time();
+			now.setToNow();
+			sTime2 = now.hour + ":" + now.minute + ":" + now.second;
+			CHECKED_OUT = 0;
+		}
+
+		time1.setText(sTime1);
+		time2.setText(sTime2);
+		diff.setText(GPS_NETWORK_DISTANCE);
+		LocationProvider.setText(LocationProviderString);
 
 	}
 

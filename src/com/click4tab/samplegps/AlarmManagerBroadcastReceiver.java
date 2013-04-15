@@ -26,7 +26,10 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 		PowerManager.WakeLock wl = pm.newWakeLock(
 				PowerManager.PARTIAL_WAKE_LOCK, "YOUR TAG");
 		// Acquire the lock
-		wl.acquire();
+		if (!wl.isHeld()) {
+
+			wl.acquire();
+		}
 		// aiwai
 		// Time now = new Time();
 		// now.setToNow();
@@ -65,7 +68,7 @@ public class AlarmManagerBroadcastReceiver extends BroadcastReceiver {
 		PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
 		// After after 30 seconds
 		am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(),
-				1000 * 20, pi);
+				1000 * 6, pi);
 	}
 
 	public void CancelAlarm(Context context) {

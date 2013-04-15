@@ -1,39 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- <fragment xmlns:android="http://schemas.android.com/apk/res/android" -->
+<!-- android:id="@+id/map" -->
+<!-- android:name="com.google.android.gms.maps.MapFragment" -->
+<!-- android:layout_width="match_parent" -->
+<!-- android:layout_height="match_parent" /> -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:keepScreenOn="true" >
-
+
 	<Button
 		android:id="@+id/button1"
-		android:layout_width="wrap_content"
+		android:layout_width="150dp"
 		android:layout_height="wrap_content"
 		android:text="Start" />
-
-	<ScrollView
-		android:id="@+id/scrollView1"
-		android:layout_width="match_parent"
-		android:layout_height="418dp"
-		android:layout_below="@+id/button1" >
 
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="match_parent" >
+	<!-- <ScrollView -->
+	<!-- android:id="@+id/scrollView1" -->
+	<!-- android:layout_width="match_parent" -->
+	<!-- android:layout_height="418dp" -->
+	<!-- android:layout_below="@+id/button1" > -->
 
-			<TextView
-				android:id="@+id/textView1"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="Medium Text"
-				android:textSize="15dp" />
-		</LinearLayout>
-	</ScrollView>
-
+
+	<!-- <LinearLayout -->
+	<!-- android:layout_width="match_parent" -->
+	<!-- android:layout_height="match_parent" > -->
+
+
+	<!-- <TextView -->
+	<!-- android:id="@+id/textView1" -->
+	<!-- android:layout_width="wrap_content" -->
+	<!-- android:layout_height="wrap_content" -->
+	<!-- android:text="Medium Text" -->
+	<!-- android:textSize="15dp" /> -->
+	<!-- </LinearLayout> -->
+	<!-- </ScrollView> -->
+
 	<Button
 		android:id="@+id/button2"
+		android:layout_width="150dp"
+		android:layout_height="wrap_content"
+		android:layout_alignParentRight="true"
+		android:layout_alignParentTop="true"
+		android:text="Stop" />
+
+	<TextView
+		android:id="@+id/textView1"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
-		android:layout_toRightOf="@+id/button1"
-		android:text="Stop" />
+		android:layout_alignParentLeft="true"
+		android:layout_below="@+id/button1"
+		android:text="Target1"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/textView2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@+id/textView1"
+		android:text="distance: "
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/dist"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBaseline="@+id/textView2"
+		android:layout_alignBottom="@+id/textView2"
+		android:layout_toRightOf="@+id/textView2"
+		android:text="dist"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/textView4"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/textView2"
+		android:text="check in at: "
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/time1"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBaseline="@+id/textView4"
+		android:layout_alignBottom="@+id/textView4"
+		android:layout_toRightOf="@+id/textView4"
+		android:text="time1"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/textView6"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignLeft="@+id/textView4"
+		android:layout_below="@+id/textView4"
+		android:text="checkout at:"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/time2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBaseline="@+id/textView6"
+		android:layout_alignBottom="@+id/textView6"
+		android:layout_toRightOf="@+id/textView6"
+		android:text="time2"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/textView3"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@+id/textView6"
+		android:layout_marginTop="23dp"
+		android:text="Dist b/w GPS and NETWORK locations :"
+		android:textAppearance="?android:attr/textAppearanceSmall" />
+
+	<TextView
+		android:id="@+id/diff"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@+id/textView3"
+		android:text="Medium Text"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/textView7"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBaseline="@+id/diff"
+		android:layout_alignBottom="@+id/diff"
+		android:layout_toRightOf="@+id/diff"
+		android:text=" m"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<!-- <WebView -->
+	<!-- android:id="@+id/webView1" -->
+	<!-- android:layout_width="match_parent" -->
+	<!-- android:layout_height="match_parent" -->
+	<!-- android:layout_alignParentLeft="true" -->
+	<!-- android:layout_below="@+id/diff" /> -->
+
+	<TextView
+		android:id="@+id/textView5"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@+id/diff"
+		android:text="Provider: "
+		android:textAppearance="?android:attr/textAppearanceMedium" />
+
+	<TextView
+		android:id="@+id/provider"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/diff"
+		android:layout_toRightOf="@+id/textView5"
+		android:text="Medium Text"
+		android:textAppearance="?android:attr/textAppearanceMedium" />
 
 </RelativeLayout>
