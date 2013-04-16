@@ -387,7 +387,7 @@ public class GPSservice extends Service {
 				Log.e("provider", "network provider will come into play now");
 				firstTime = true; // setting first time = 1, location will be
 									// saved for only single time
-
+				mLocationManager.removeUpdates(mLocationListeners[0]);
 			}
 
 		}
